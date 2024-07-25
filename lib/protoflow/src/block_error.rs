@@ -1,12 +1,11 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{
-    prelude::{fmt, String, ToString},
-    PortError,
-};
-
 #[cfg(feature = "std")]
 extern crate std;
+use crate::{
+    PortError,
+    prelude::{fmt, String, ToString},
+};
 
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum BlockError {
@@ -32,6 +31,12 @@ impl fmt::Display for BlockError {
             Self::PortError(e) => write!(f, "{}", e),
             Self::Other(message) => write!(f, "{}", message),
         }
+    }
+}
+
+impl From<PortError> for BlockError {
+    fn from(error: PortError) -> Self {
+        Self::PortError(error)
     }
 }
 

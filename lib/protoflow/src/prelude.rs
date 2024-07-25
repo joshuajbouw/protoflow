@@ -2,7 +2,6 @@
 
 extern crate alloc;
 
-#[allow(unused)]
 pub use alloc::{
     boxed::Box,
     string::{String, ToString},
@@ -10,7 +9,6 @@ pub use alloc::{
     vec::Vec,
 };
 
-#[allow(unused)]
 pub use core::{
     fmt,
     marker::PhantomData,
@@ -20,4 +18,7 @@ pub use core::{
     time::Duration,
 };
 
-pub type Instant = Duration;
+#[cfg(all(feature = "std", not(feature = "tokio")))]
+pub use std::time::Instant;
+#[cfg(feature = "tokio")]
+pub use tokio::time::Instant;

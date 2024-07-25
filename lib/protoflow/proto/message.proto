@@ -1,0 +1,17 @@
+// This is free and unencumbered software released into the public domain.
+syntax = "proto3";
+
+package protoflow;
+
+message FBPMessage {
+  // The version of the message.
+  int32 version = 1;
+  // The source of the message.
+  string source = 2;
+  // Timestamp of the message in nanoseconds.
+  int64 timestamp = 3;
+  // The variant of message.
+  bytes content = 4;
+  // The attributes map, containing key-value pairs of optional metadata.
+  map<string, bytes> attrs = 5;
+}

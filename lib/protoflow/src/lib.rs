@@ -3,6 +3,7 @@
 #![no_std]
 
 mod prelude;
+pub use prelude::*;
 
 pub use prost::Message;
 
@@ -30,6 +31,9 @@ pub use feature::*;
 
 mod function_block;
 pub use function_block::*;
+
+mod inport;
+pub use inport::*;
 
 mod input_port;
 pub use input_port::*;

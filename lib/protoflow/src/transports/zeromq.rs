@@ -1,5 +1,7 @@
 // This is free and unencumbered software released into the public domain.
 
+use core::marker::PhantomData;
+
 use futures::TryFutureExt;
 #[cfg(feature = "tokio")]
 use tokio::{runtime::Handle, task};
@@ -65,13 +67,17 @@ impl<M: Message> Sender<M> for ZmqSender {
 }
 
 #[derive(Default)]
-pub struct ZmqReceiver {
+pub struct ZmqReceiver<M: Message> {
     socket: Option<PullSocket>,
+    phantom: PhantomData<M>,
 }
 
-impl ZmqReceiver {
+impl<M: Message> ZmqReceiver<M> {
     pub fn new() -> Self {
-        Self { socket: None }
+        Self {
+            socket: None,
+            phantom: PhantomData,
+        }
     }
 
     pub fn open(&mut self, endpoint: &str) -> Result<(), ()> {
@@ -87,7 +93,7 @@ impl ZmqReceiver {
     }
 }
 
-impl<M: Message + Default> Receiver<M> for ZmqReceiver {
+impl<M: Message + Default> Receiver<M> for ZmqReceiver<M> {
     fn recv(&mut self) -> Result<M, ()> {
         task::block_in_place(move || {
             Handle::current().block_on(async move {

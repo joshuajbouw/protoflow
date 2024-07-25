@@ -1,5 +1,8 @@
 // This is free and unencumbered software released into the public domain.
 
+#[cfg(feature = "std")]
+extern crate std;
+
 use crate::{
     prelude::{vec, Vec},
     Block, BlockDescriptor, BlockError, InputPort, Message, OutputPort, Port, PortDescriptor,

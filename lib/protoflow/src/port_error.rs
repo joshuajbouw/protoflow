@@ -1,9 +1,9 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::prelude::{fmt, String, ToString};
-
 #[cfg(feature = "std")]
 extern crate std;
+use crate::prelude::{fmt, String, ToString};
+
 
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum PortError {
@@ -11,6 +11,7 @@ pub enum PortError {
     Disconnected,
     RecvFailed,
     SendFailed,
+    NotEstablished,
     Other(String),
 }
 
@@ -21,6 +22,7 @@ impl fmt::Debug for PortError {
             Self::Disconnected => write!(f, "PortError::Disconnected"),
             Self::RecvFailed => write!(f, "PortError::RecvFailed"),
             Self::SendFailed => write!(f, "PortError::SendFailed"),
+            Self::NotEstablished => write!(f, "PortError::NotEstablished"),
             Self::Other(message) => write!(f, "PortError::Other(\"{}\")", message),
         }
     }
@@ -33,6 +35,7 @@ impl fmt::Display for PortError {
             Self::Disconnected => write!(f, "Port is not connected"),
             Self::RecvFailed => write!(f, "Port receive failed"),
             Self::SendFailed => write!(f, "Port send failed"),
+            Self::NotEstablished => write!(f, "Port connection is not established"),
             Self::Other(message) => write!(f, "{}", message),
         }
     }

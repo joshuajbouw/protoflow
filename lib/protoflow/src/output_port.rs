@@ -1,35 +1,50 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{
-    prelude::{fmt, PhantomData, String},
-    BlockError, Message, Port, PortState,
-};
+use core::marker::PhantomData;
 
-#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct OutputPort<T: Message> {
-    _phantom: PhantomData<T>,
+#[cfg(all(not(feature = "flume"), feature = "std"))]
+use std::sync::mpsc::Sender;
+
+use crate::{
+    BlockError,
+    Message, Port, PortState, prelude::{fmt, String},
+};
+use crate::transport::Sender;
+use crate::transports::FlumeSender;
+
+pub struct OutputPort<M: Message, S: Sender<M>> {
     state: PortState,
     name: String,
     label: Option<String>,
+    sender: Option<S>,
+    _phantom: PhantomData<M>,
 }
 
-impl<T: Message> OutputPort<T> {
-    pub fn new(name: impl Into<String>) -> Self {
+impl<M: Message> OutputPort<M, FlumeSender<M>> {
+    pub fn new_with_flume(name: impl Into<String>) -> Self {
         Self {
-            _phantom: PhantomData,
             state: PortState::default(),
             name: name.into(),
             label: None,
+            sender: None,
+            _phantom: PhantomData,
         }
     }
 
-    pub fn new_with_label(name: impl Into<String>, label: Option<impl Into<String>>) -> Self {
+    pub fn new_flume_with_label(name: impl Into<String>, label: Option<impl Into<String>>) -> Self {
         Self {
-            _phantom: PhantomData,
             state: PortState::default(),
             name: name.into(),
             label: label.map(|s| s.into()),
+            sender: None,
+            _phantom: PhantomData,
         }
+    }
+
+    pub fn open(&mut self, sender: FlumeSender<M>) -> Result<(), BlockError> {
+        self.state = PortState::Open;
+        self.sender = Some(sender);
+        Ok(())
     }
 
     pub fn close(&mut self) -> Result<(), BlockError> {

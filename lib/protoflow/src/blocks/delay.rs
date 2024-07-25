@@ -1,13 +1,13 @@
 // This is free and unencumbered software released into the public domain.
 
+#[cfg(feature = "std")]
+use rand::Rng;
+
 use crate::{
     prelude::{vec, Duration, Range, Vec},
     Block, BlockDescriptor, BlockError, InputPort, Message, OutputPort, Port, PortDescriptor,
     Scheduler,
 };
-
-#[cfg(feature = "rand")]
-use rand::Rng;
 
 /// A block that passes messages through while delaying them by a fixed or
 /// random duration.

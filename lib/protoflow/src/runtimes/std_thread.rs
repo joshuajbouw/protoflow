@@ -1,40 +1,60 @@
 // This is free and unencumbered software released into the public domain.
 
-use crate::{
-    prelude::{AtomicBool, Duration, Instant, Ordering},
-    BlockError, Port, Runtime, Scheduler, System,
-};
-
 #[cfg(feature = "std")]
 extern crate std;
 
+use std::sync::Mutex;
+use std::time::Instant;
+
+use crate::{Port, prelude::Duration, Runtime, RuntimeStatus, Scheduler, System};
+
 pub struct StdThread {
-    is_alive: AtomicBool,
+    system: System,
+    status: Mutex<RuntimeStatus>,
 }
 
 impl Runtime for StdThread {
-    fn new(_system: &System) -> Self {
+    fn new(system: System) -> Self {
         Self {
-            is_alive: AtomicBool::new(true),
+            system,
+            status: Mutex::new(RuntimeStatus::NotStarted),
         }
+    }
+
+    fn is_stopped() -> bool {
+        todo!()
+    }
+
+    fn has_error() -> bool {
+        todo!()
+    }
+
+    fn status() -> RuntimeStatus {
+        todo!()
+    }
+
+    fn run(&mut self) {
+        todo!()
     }
 }
 
 impl Scheduler for StdThread {
     fn is_alive(&self) -> bool {
-        self.is_alive.load(Ordering::SeqCst)
+        match *self.status.lock().expect("Status unexpectedly poisoned") {
+            RuntimeStatus::Running | RuntimeStatus::Dormant => true,
+            _ => false,
+        }
     }
 
-    fn sleep_for(&self, duration: Duration) -> Result<(), BlockError> {
-        #[cfg(feature = "std")]
+    fn sleep_for(&self, duration: Duration) {
         std::thread::sleep(duration);
-        #[cfg(not(feature = "std"))]
-        unimplemented!("std::thread::sleep requires the 'std' feature");
-        Ok(())
     }
 
-    fn sleep_until(&self, _instant: Instant) -> Result<(), BlockError> {
-        todo!() // TODO
+    fn sleep_until(&self, instant: Instant) {
+        let now = Instant::now();
+        if now < instant {
+            std::thread::sleep(instant - now);
+        }
     }
 
     fn wait_for(&self, port: &dyn Port) -> Result<(), BlockError> {
@@ -48,11 +68,8 @@ impl Scheduler for StdThread {
         }
     }
 
-    fn yield_now(&self) -> Result<(), BlockError> {
-        #[cfg(feature = "std")]
+    fn yield_now(&self) -> Result<(), ()> {
         std::thread::yield_now();
-        #[cfg(not(feature = "std"))]
-        unimplemented!("std::thread::yield_now requires the 'std' feature");
         Ok(())
     }
 }
